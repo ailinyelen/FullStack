@@ -54,7 +54,7 @@ app.get('/api/persons/:id', (request, response) => {
     : response.status(404).json({error:'Contact Not Found'})
 })
 
-app.post('/', (request, response) => {
+app.post('/api/persons', (request, response) => {
     console.log(request.body)
     const name = request.body.name
     const number = request.body.number
@@ -73,7 +73,7 @@ app.post('/', (request, response) => {
 
 app.delete('/api/persons/:id', (request, response) => {
     const id = request.params.id
-    contacts = contacts.filter(each => each.id != Number(id))
+    contacts = contacts.filter(each => each.id !== Number(id))
     console.log('deleted ', id)
     response.status(204).end()
 })
