@@ -4,10 +4,12 @@ const cors = require('cors')
 const app = express()
 const mongoose = require('mongoose')
 
+
 app.use(cors())
 app.use(express.static('build'))
 app.use(express.json())
 app.use(morgan('common'))
+
 
 // Connection with DB
 const password = 'mongoDBtest'
@@ -24,7 +26,6 @@ const contactSchema = new mongoose.Schema({
     number: String,
     id: String
 })
-
 
 contactSchema.set('toJSON', {
     transform: (document, returnedObject) => {
@@ -47,16 +48,19 @@ app.get('/api/persons', (request, response) => {
 
 // Get contact by ID
 
-app.get('/api/persons/:id', (request, response) => {
-    const contact =
+app.get('/api/persons/:id', (request, response, next) => {
         Contact
             .findById(request.params.id)
             .then(contact => {
+                console.log(contact)
                 contact
                     ? response.json(contact)
                     : response.status(404).json({ error: 'Contact Not Found' })
             })
-            .catch(error => next(error))
+            .catch(error => {
+                if (error.name === 'CastError')
+                    return response.status(400).send({ error: 'malformatted id' })
+            })
 })
 
 // Add new contact
@@ -67,11 +71,8 @@ app.post('/api/persons', (request, response) => {
     const number = request.body.number
 
     if (!name || !number)
-        response.status(400).json({ error: 'Missing Parameters' })
-    /*
-    else if (contacts.find(each => each.name === name))
-        response.status(400).json({error:'Name already exists in phonebook'})
-    */
+        response.status(400).send({ error: 'Missing Parameters' })
+
     else {
         const contact = new Contact({ name, number })
         contact.save().then(result => {
@@ -79,6 +80,25 @@ app.post('/api/persons', (request, response) => {
         })
         response.json(contact)
     }
+})
+
+// Modify contact
+
+app.put('/api/persons/:id', (request, response) => {
+    console.log(request.body)
+    const newNumber = request.body.number
+    const name = request.body.name
+
+    if (!newNumber || !name)
+        response.status(400).json({ error: 'Missing Parameters' })
+    else 
+        Contact
+            .updateOne({name: name}, {$set: {number: newNumber}}, {})
+            .then(result => {
+                console.log(result)
+                console.log(`updated number ${newNumber} for: ${name} to phonebook`)
+                response.end()
+            })
 })
 
 // Delete contact
