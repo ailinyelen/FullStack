@@ -12,7 +12,7 @@ app.use(morgan('common'))
 
 
 // Connection with DB
-const password = 'mongoDBtest'
+const password = '--- insert password here ---'
 
 const url = `mongodb+srv://ailinyelenb:${password}@test.vu51asg.mongodb.net/contactsApp?retryWrites=true&w=majority`
 
