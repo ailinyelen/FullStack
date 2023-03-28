@@ -4,7 +4,6 @@ const cors = require('cors')
 const app = express()
 const mongoose = require('mongoose')
 
-
 app.use(cors())
 app.use(express.static('build'))
 app.use(express.json())
@@ -12,9 +11,8 @@ app.use(morgan('common'))
 
 
 // Connection with DB
-const password = 'mongoDBtest'
 
-const url = `mongodb+srv://ailinyelenb:${password}@test.vu51asg.mongodb.net/contactsApp?retryWrites=true&w=majority`
+const url = process.env.MONGODB_URI
 
 mongoose.set('strictQuery', false)
 mongoose.connect(url)
@@ -22,8 +20,16 @@ mongoose.connect(url)
 // Contact Schema
 
 const contactSchema = new mongoose.Schema({
-    name: String,
-    number: String,
+    name: {
+        type: String,
+        minLength: 3,
+        required: true
+    },
+    number: {
+        type: String,
+        minLength: 5,
+        required: true
+    },
     id: String
 })
 
@@ -48,64 +54,64 @@ app.get('/api/persons', (request, response) => {
 
 // Get contact by ID
 
-app.get('/api/persons/:id', (request, response, next) => {
-        Contact
-            .findById(request.params.id)
-            .then(contact => {
-                console.log(contact)
-                contact
-                    ? response.json(contact)
-                    : response.status(404).json({ error: 'Contact Not Found' })
-            })
-            .catch(error => {
-                if (error.name === 'CastError')
-                    return response.status(400).send({ error: 'malformatted id' })
-            })
+app.get('/api/persons/:id', (request, response) => {
+    Contact
+        .findById(request.params.id)
+        .then(contact => {
+            console.log(contact)
+            contact
+                ? response.json(contact)
+                : response.status(404).json({ error: 'Contact Not Found' })
+        })
+        .catch(error => {
+            if (error.name === 'CastError')
+                return response.status(400).json({ error: 'Malformatted id' })
+        })
 })
 
 // Add new contact
 
 app.post('/api/persons', (request, response) => {
-    console.log(request.body)
-    const name = request.body.name
-    const number = request.body.number
+    const contact = new Contact(request.body)
 
-    if (!name || !number)
-        response.status(400).send({ error: 'Missing Parameters' })
-
-    else {
-        const contact = new Contact({ name, number })
-        contact.save().then(result => {
-            console.log(`added ${name} number ${number} to phonebook`)
+    contact
+        .save()
+        .then(result => {
+            console.log(`added ${contact.name} number ${contact.number} to phonebook`)
+            response.json(contact)
         })
-        response.json(contact)
-    }
+        .catch(error => {
+            if (error.name === 'ValidationError')
+                return response.status(400).json({ error: error.message })
+        })
 })
 
 // Modify contact
 
 app.put('/api/persons/:id', (request, response) => {
-    console.log(request.body)
-    const newNumber = request.body.number
-    const name = request.body.name
+    const {name, number, id} = request.body
+    console.log(name, name.length)
+    console.log(number, number.length)
 
-    if (!newNumber || !name)
-        response.status(400).json({ error: 'Missing Parameters' })
-    else 
-        Contact
-            .updateOne({name: name}, {$set: {number: newNumber}}, {})
-            .then(result => {
-                console.log(result)
-                console.log(`updated number ${newNumber} for: ${name} to phonebook`)
-                response.end()
-            })
+    Contact
+        .updateOne({ name: name }, { $set: { number: number } }, {runValidators: true})
+        .then(result => {
+            console.log(result)
+            console.log(`updated number ${number} for: ${name} to phonebook`)
+            response.end()
+        })
+        .catch(error => {
+            if (error.name === 'ValidationError')
+                return response.status(400).json({ error: error.message })
+        })
+
 })
 
 // Delete contact
 
 app.delete('/api/persons/:id', (request, response) => {
     console.log('delete: ', request.params.id)
-    //console.log(Contact.findById(request.params.id))
+
     Contact
         .findByIdAndDelete(request.params.id)
         .then(result => {
