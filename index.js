@@ -12,7 +12,7 @@ app.use(morgan('common'))
 
 // Connection with DB
 
-const url = 'mongodb+srv://ailinyelenb:mongoDBtest@test.vu51asg.mongodb.net/?retryWrites=true&w=majority'
+const url = 'mongodb+srv://ailinyelenb:mongoDBtest@test.vu51asg.mongodb.net/contactsApp?retryWrites=true&w=majority'
 
 mongoose.set('strictQuery', false)
 mongoose.connect(url)
