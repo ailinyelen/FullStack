@@ -89,15 +89,13 @@ app.post('/api/persons', (request, response) => {
 // Modify contact
 
 app.put('/api/persons/:id', (request, response) => {
-    const {name, number, id} = request.body
-    console.log(name, name.length)
-    console.log(number, number.length)
+    const contact = request.body
 
     Contact
-        .updateOne({ name: name }, { $set: { number: number } }, {runValidators: true})
+        .updateOne({ name: contact.name }, { $set: { number: contact.number } }, {runValidators: true})
         .then(result => {
             console.log(result)
-            console.log(`updated number ${number} for: ${name} to phonebook`)
+            console.log(`updated number ${contact.number} for: ${contact.name} to phonebook`)
             response.end()
         })
         .catch(error => {
