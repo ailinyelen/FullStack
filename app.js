@@ -30,7 +30,7 @@ app.use(express.static('build'))
 app.use(express.json())
 app.use(middleware.requestLogger)
 
-app.use('/api/persons', contactsRouter)
+app.use('/api/contacts', contactsRouter)
 
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)
