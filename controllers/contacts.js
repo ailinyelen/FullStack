@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const Contact = require('./models/contact')
+const Contact = require('../models/contact')
 
 
 router.get('', (request, response, next) =>
